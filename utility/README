@@ -1,0 +1,64 @@
+////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////  The  FEAST Eigenvalue Solver     ///////////////////////////
+//////////// ///////////////////////////////////////////////////////////////////////////////
+Author: Eric Polizzi  
+        Department of Electrical and Computer Engineering
+        University of Massachusetts, Amherst                           
+E-mail: polizzi@ecs.umass.edu (for FEAST realted questions please use:  feastsolver@gmail.com)              
+web   : http://www.ecs.umass.edu/~polizzi/feast  
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+FEAST UTILITY:     this directory offers a quick test on the efficiency/reliability of FEAST if a sparse
+                     matrix can be provided by the user (in coordinate format)
+                   - a general driver is provided for Fortran, C, Fortran-MPI, and C-MPI named "(p)driver_feast_sparse"
+                   - In the Fortran, C, Fortran-MPI and C-MPI  directories
+    !!!!Please correct accordingly compiler and libraries paths, change compiler options in the Makefile !!!!
+ 
+*************************************************************           
+************** How does this work ? *************************
+**** (look also at the FEAST documentation section FEAST applications) 
+*************************************************************
+
+ As example let us denote "mytest" a generic name for the user's eigenvalue system test AX=eX or AX=eBX:
+
+                     *the file "mytest.A" shall contain the matrix A in coordinate format 
+                     *the file "mytest.B" shall contain the matrix B in coordinate format (if any)
+                     *the file "mytest.in" shall contain the search interval, selected FEAST parameters, etc.                 
+
+----------------------------------------------------------------------------------------
+The coordinate format is defined as (m=size of matrix, nnz number of non-zero elements):
+      m       m       nnz
+     i1      j1      val1
+     i2      j2      val2
+     i3      j3      val3
+     .       .        .
+     .       .        .
+     .       .        .
+     inz     jnz     valnnz
+-----------------------------------------------------------------------------------------                   
+
+
+                    Finally users can run (for example): ./driver_feast_sparse "PATH_TO_MYTEST"/mytest 
+                                                        or
+                                            mpirun -ppn 1 -n 2 ./pdriver_feast_sparse "PATH_TO_MYTEST"/mytest 
+ 
+                    - In the directory "data", four examples are provided:
+                            - system1 (identical to system1 in ./example directory)
+                            - system2 (identical to system2 in ./example directory)
+                            - helloworld (identical to helloworld in ./example directory for dense format)
+                            - cnt (example from Nanoelectronics and Carbon Nanotube)
+                    To run a specific test, execute (for example): ./driver_feast_sparse ../data/system1
+
+                   - Via editing the files: system1.in, system2.in, helloworld.in, cnt.in and c6h6.in 
+                               Users can get a detailed description of the input fields 
+                               to create  their own "mytest.in" file.
+
+                   -Remark: *if the UPLO parameter in the *.in file is set to "F" all the elements of 
+                            the matrices A, B need to be declared in the coordinate formats, 
+                            *if UPLO="L" the coordinate format may contain only the entries below the main 
+                            diagonal (diagonal included)  
+                            *if UPLO="U" the coordinate format may contain only the entries above the main 
+                            diagonal (diagonal included)  
+

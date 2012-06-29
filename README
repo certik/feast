@@ -1,0 +1,129 @@
+////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////  The  FEAST Eigenvalue Solver     ///////////////////////////
+//////////// ///////////////////////////////////////////////////////////////////////////////
+Author: Eric Polizzi  
+        Department of Electrical and Computer Engineering
+        University of Massachusetts, Amherst                           
+E-mail: polizzi@ecs.umass.edu (for FEAST related questions please use:  feastsolver@gmail.com)              
+web   : http://www.ecs.umass.edu/~polizzi/feast  
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+General Description: Solving Eigenvalue Problem of form AX=eBX or AX=eX for
+                     obtaining eigenpairs within the search interval [Emin,Emax]
+
+
+Reference: "Density-Matrix-Based Algorithm for Solving Eigenvalue Problems"
+           E. Polizzi
+           Physical Review B, Vol. 79, 11512 (2009)     
+                                                                       
+
+===================================================================================================
+Version: 2.0   
+Version Description: 
+
+    * Solving Ax=ex or Ax=eBx, A is real symmetric or complex Hermitian, B is symmetric or Hermitian positive definite
+    * SMP version (one node) and MPI-version (multi-nodes).
+    * Source code and pre-compiled libraries provided for commun architectures The pre-compiled libraries do not require 
+      any specific compilers (no runtime dependencies).
+    * All FEAST interfaces compatible with Fortran (77 and 90) and C,
+    * Reverse communication interfaces: Maximum flexibility for application-specific. Those are matrix format independent,
+      inner system solver independent, so users must provide their own linear system solvers (direct or iterative) and 
+      mat-vec utility routines.
+    * Predefined driver interfaces for dense, banded, and sparse formats: Easy ("plug and play") and Optimized.
+    * All FEAST libraries require BLAS and LAPACK packages (not included),
+    * FEAST banded drivers use the SPIKE banded primitives (included)
+    * FEAST sparse drivers use the MKL-PARDISO solver (not included).
+    * FEAST dense drivers are not intended for performances using FEAST-SMP (scalability can be obtained using FEAST-MPI)
+    * Real/Complex and Single/Double precisions
+    * Examples and documentation included,
+    * Utility routines for sparse systems included: users can provide their sparse systems for quick testing, timing, etc. .
+ ===================================================================================================
+
+
+
+Library: FEASTROOT (this directory)
+            |
+  ----------------------------------------------------
+    |       |       |        |        |        |
+   src     lib   include    doc    example     utility 
+
+
+**********************************************************************************************
+**********************************************************************************************
+**************** In the following, we briefly address the  question: *************************
+****************         How should you use FEAST ?                   ************************
+**************** All Details can be found in the FEAST documentation *************************
+**********************************************************************************************
+**********************************************************************************************
+
+===================================================================================================
+ATTENTION : It is recommended to define the Shell variable "export FEASTROOT="path to this directory"
+===================================================================================================
+
+
+LIBRARY PATH: (choose one)
+              -L/$(FEASTROOT)/lib/x64 (for 64 bits architectures)
+              -L/$(FEASTROOT)/lib/"yourown" (where "yourown" directory can contain the FEAST library
+                                             compiled for your own specific architectures and optionally 
+                                              for FEAST-MPI your own MPI implementation)
+
+INCLUDE PATH: It is mandatory only for C codes along with instructions that need to be added in the header C file (all that apply):
+              #include "feast.h"
+              #include "feast sparse.h"
+              #include "feast banded.h"
+              #include "feast dense.h"
+
+
+COMPILATION LINKS: (Example/ choose one)
+		   -lfeast                (FEAST Reverse Communication Interfaces-kernel)
+                   -lfeast_dense  -lfeast (FEAST dense interfaces/drivers,  also includes -lfeast_rci)
+                   -lfeast_banded -lfeast (FEAST banded interfaces/drivers, also includes -lfeast_rci)
+                   -lfeast_sparse -lfeast (FEAST sparse interfaces/drivers, also includes -lfeast_rci)
+                   -In general: Any FEAST-drivers combinations follows by -lfeast 
+                   
+
+DEPENDENCY:
+                   - the libraries LAPACK/BLAS (not provided) are needed
+                   - the library MKL-PARDISO (not provided) is only needed for -lfeast_sparse
+                   - the Intel MKL library is highly recommended and contains pardiso,lapack and blas 
+              
+
+EXAMPLES of COMPILATION LINKS with DEPENDENCY: (Example/ choose one)
+
+             include dense drivers+rci        1/ -lfeast_dense  -lfeast -lapack -lblas
+             include banded drivers+rci       2/ -lfeast_banded -lfeast -lapack -lblas
+             include sparse drivers+rci       3/ -lfeast_sparse -lfeast -lpardiso -lapack -lblas
+             include rci                      4/ -lfeast -lapack -lblas
+
+
+REVERSE COMMUNICATION INTERFACES (RCI): TFEAST_{S,H}RCI ("T" denotes S,D,C or Z)
+                    -routines are then called:
+                          SFEAST_SRCI, DFEAST_SRCI (Real Symmetric resp. single and double precision) 
+                          CFEAST_HRCI, ZFEAST_HRCI (Complex Hermitian resp. single and double precison)
+                    -Matrix free format (FEAST is independent of the matrix data format) 
+	            -users must then provide their own direct/iterative solver for solving the linear 
+                     system-type  MY =F
+                    -A preconditioner can be also used for iterative solver
+                    -user must provide his own mat-vec
+                    -for Complex systems, FEAST can be accelerated if user can provide a routine for
+                     solving the linear system-type  M^H Y=F (H for Hermitian) knowing only the 
+                     factorization of M (case 21)
+
+               
+PREDEFINED DRIVER INTERFACES:  TFEAST_XYY 
+                                          *"T"  denotes S or D for real single/double precision 
+                                                        C or Z for complex single/double precision 
+                                          *"YY" denotes GV for generalized eigenvalue problem
+                                                        EV for standart eigenvalue problem  
+                          
+                    - If "X"={SY,HE} :: Dense format  (ATTENTION: current version is not intended for obtaining performance)
+                      uses LAPACK inner system solver:
+                    - If "X"={SB,HB} :: Banded LAPACK Format  
+                      uses SPIKE primitives inner system solver (included)
+                    - If "X"={SCSR,HCSR} :: Sparse Format  
+                      uses PARDISO inner system solver (not included)
+
+
+
+

@@ -1,0 +1,30 @@
+Compilation of the FEAST library source code:
+----------------------------------------------
+
+- You are currently in the directory $FEASTROOT/src with the following files:
+
+feast.f90                  ! FEAST_RCI interfaces (FEAST-kernel)  
+feast_dense.f90            ! FEAST_DENSE interfaces
+feast_banded.f90           ! FEAST_BANDED interfaces
+feast_sparse.f90           ! FEAST_SPARSE interfaces
+f90_noruntime_interface.fi ! F90 interface wrapper to certain F90 runtime dependent intrinsic functions 
+f90_functions_wrapper.f90  ! Corresponding intrinsic functions in F90
+c_functions_wrapper.c      ! Corresponding intrinsic functions in C
+c_functions_wrapper.h      ! Header file for c_functions_wrapper.c 
+lbprim.f90                 ! banded primitives used by FEAST_BANDED
+lsprim.f90                 ! sparse primitives used by FEAST_SPARSE
+point_gauss_legendre.f90   ! Gauss-quadrature routines used by FEAST_RCI
+Makefile                   ! Generic Makefile
+make.inc                   ! Options for Makefile with user specification options
+LICENSE                    ! FEAST BSD License file
+README                     ! this file
+
+- In order to proceed to compilation: Edit the "make.inc" file and follow the directions to change appropriately the name/path 
+of the Fortran90 and C compilers, and/or MPI (you can also consult the documentation)
+
+- Execute: "make ARCH=<arch> LIB=<feast,pfeast> all
+ where <arch> is your selected name for your architecture; your FEAST libraries (feast or pfeast for MPI version)
+will then be created in directory $FEASTROOT/lib/<arch>
+
+- If you have successfully created an entire FEAST library for your own architecture (using the no runtime dependency option) and different MPI options, 
+please consider sending those files by-email to "feastsolver@gmail.com" in order to add them to the list of pre-compiled libraries.

@@ -1,0 +1,17 @@
+g      ! "s"tandard or "g"eneralized eigenvalue problem 
+d      !(s,d,c,z)precision i.e (single real,double real,complex,double complex)  
+F      ! UPLO
+-104.13e-19  ! Emin 
+7.946e-19 ! Emax    
+150 ! M0 !! M0>=M
+!!!!FEASTPARAM (1,64]) in fortran; [0,63] in C 
+1   !feastparam(1)[0] !com (0,1)
+8   !feastparam(2)[1] !nbe
+12  !tol:: feastparam(3)[2] if (s,c) or feastparam(7)[6] if (d,z)
+20  !feastparam(4)[3] !maxloop
+1   !feastparam(6)[5] !resid
+
+
+
+
+

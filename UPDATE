@@ -1,0 +1,82 @@
+
+=============================================================================
+::: FROM VERSION V1.0 to V2.0
+=============================================================================
+
+1- Major upgrades
+  a- FEAST-MPI is now available allowing up to three levels of parallelism (MPI -calling- MPI -calling -OpenMP)
+  b- Compilation links (see below)
+  c- Definition of "case" while using FEAST_RCI has changed  
+    - case 10, FACT of zB-A
+    - case 11, SOLVE of (zB-A)*x=work
+    - case 20, FACT of (zB-A)^T (* optional if case 21 can be handled by user using FACT of zB-A,
+                                 * otherwise the user is responsible to create a new matrix (zB-A)^T and then factorize it)                              
+    - case 21, SOLVE of (zB-A)^T*x=work
+    
+     Also
+     -case 30, A*x multiplication from column of going from fpm(24) to fpm(24)+fpm(25)-1 (size fpm(25))
+     -case 40, B*x multiplication from column of going from fpm(24) to fpm(24)+fpm(25)-1 (size fpm(25))
+
+  d- Rename of FEAST interfaces (argument list is unchanged):
+         v1.0                v2.0
+    RCI
+       {s,d}feast_rci  ==>  {s,d}feast_srci
+       {c,z}feast_rci  ==>  {c,z}feast_hrci
+    DENSE     
+       {s,d}feast_dst  ==>  {s,d}feast_syev
+       {s,d}feast_dge  ==>  {s,d}feast_sygv
+       {c,z}feast_dst  ==>  {c,z}feast_heev
+       {c,z}feast_dge  ==>  {c,z}feast_hegv
+    BANDED     
+       {s,d}feast_bst  ==>  {s,d}feast_sbev
+       {s,d}feast_bge  ==>  {s,d}feast_sbgv
+       {c,z}feast_bst  ==>  {c,z}feast_hbev
+       {c,z}feast_bge  ==>  {c,z}feast_hbgv
+    SPARSE     
+       {s,d}feast_sst  ==>  {s,d}feast_scsrev
+       {s,d}feast_sge  ==>  {s,d}feast_scsrgv
+       {c,z}feast_sst  ==>  {c,z}feast_hcsrev
+       {c,z}feast_sge  ==>  {c,z}feast_hcsrgv
+
+
+2-Compilation and Linking:
+ a- Propose an alternative compilation procedure for fortran 90 users alone who have problems to compile/link 
+    with wrappers for C low level functions (within this option the FEAST library is not fortran runtime dependency free): 
+    -Option changes included in /src/make.inc
+    -Adding /src/f90_functions_wrapper.f90
+    -Modification of /src/f90_noruntime_dependency.fi -- "pointer" statement added at the declaration of array variables
+ b- MPI compilation added has an option for the FEAST-MPI library
+ c- C wrappers to FEAST interfaces have been removed from the /src/ directory and library compilation. C users can found 
+    the include files in /include
+ d- Compilation links have changed (..Examples..)
+    -lfeast                 (basic kernel)
+    -lfeast_dense -lfeast   (dense interface- requires basic kernel)
+    -lfeast_banded -lfeast  (banded interface- requires basic kernel)
+    -lfeast_sparse -lfeast_banded -lfeast  (sparse and banded interfaces- require basic kernel)
+     ===>Remarks<===: for FEAST-MPI, "feast" ==> "pfeast"
+ e- The sparse interfaces need to be linked with MKL-PARDISO v10.3 (update 5 and beyond) which features the transpose option
+    for PARDISO. As a result, the complex Hermitian problem would be solved up to x2 times faster (as compared to v1.0). 
+
+3- FEAST PARAMETERS- Definition of fpm (==feastparam) updated or changes for parameters: 
+    - fpm(9) (new for MPI option)  contains the user defined MPI communicators for a given search interval (MPI_COMM_WORLD by default)
+    - fpm(10) is removed
+    - fpm(11) is removed  ==> simplify transpose option in the RCI calls
+    - fpm(14) is added ==>  possibilty to return only subspace Q size M0 after 1 contour  
+
+4- Other Technicalities
+   a- Replace "*feastparam[64]" by "*feastparam" in the C wrappers (bug fixed)
+   b- Modification of lbprim --return to line with "& statement" may cause problem to some Fortran compilers at runtime.
+   c- Remove wread_line subroutine (unused)
+   e- if #max loop is reached, the info code =2 but eigenvalues/vectors and residuals are still computed.
+   f- #maxloop can now be set to 0, if a single contour is desired (without outer-iteration loop)
+   g- For information (consultation) only, all the eigenvalues in the subspace are returned (not only the ones contained in the search interval). 
+      Similarly, the residuals for the all vector subspace are computed (if option is selected). 
+   h- Adding dummy assumed array pointer shape as input for some "lsprim" routines used by the feast_sparse driver (even if those array pointers are unused, 
+      some recent Fortran compilers may create error at runtime)<<<<< that was causing feast_sparse to crash using some f90 compilers.
+   i- feast_rci.f90 renamed feast.f90
+   j- Names of the drivers in /examples have changed (consistent with feast routines)
+   k- New Fortran-MPI and C-MPI directories added for /examples and /utility. The corresponding /examples also include a new
+    "3pdriver_zfeast_heev" driver which enables 3 levels parallelism (including one for the search interval using MPI)  
+    only fpm(9) needs to be defined appropriately
+   l- New (additional) function "feastinit_driver(feastparam,N)" which allows to define arbitrary number of parameters for the driver interface from 65 to N
+    - feast_sparse would include here the iparm array for pardiso (see documentation for examples)
